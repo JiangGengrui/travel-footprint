@@ -1,26 +1,18 @@
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getProvinceById } from '../../data/provincesData';
 import { useStore } from '../../store/useStore';
 import { Flag3D } from '../Flag/Flag3D';
-import { CityMarker } from './CityMarker';
 
 export function ProvinceMap() {
   const groupRef = useRef<THREE.Group>(null);
   const { currentProvince, footprints, setCurrentProvince, openModal, removeFootprint } = useStore();
   
-  const province = useMemo(() => {
-    return getProvinceById(currentProvince || '');
-  }, [currentProvince]);
+  const province = getProvinceById(currentProvince || '');
 
-  const visitedCities = useMemo(() => {
-    return footprints.filter(f => f.provinceId === currentProvince);
-  }, [footprints, currentProvince]);
-
-  const visitedCityIds = useMemo(() => {
-    return new Set(visitedCities.map(v => v.cityId));
-  }, [visitedCities]);
+  const visitedCities = footprints.filter(f => f.provinceId === currentProvince);
+  const visitedCityIds = new Set(visitedCities.map(v => v.cityId));
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -33,57 +25,55 @@ export function ProvinceMap() {
     return null;
   }
 
-  const handleBack = () => {
-    setCurrentProvince(null);
-  };
-
-  const handleAddCity = (cityId: string) => {
-    openModal(cityId);
-  };
-
-  const handleRemoveCity = (footprintId: string) => {
-    removeFootprint(footprintId);
-  };
+  const citiesCount = province.cities.length;
+  const cols = Math.ceil(Math.sqrt(citiesCount));
+  const spacing = 2;
 
   return (
     <group ref={groupRef}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#1E293B" />
+      {/* 背景板 */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -0.1]}>
+        <planeGeometry args={[cols * spacing + 2, (Math.ceil(citiesCount / cols) * spacing + 2)]} />
+        <meshBasicMaterial color="#1a1f3a" />
       </mesh>
       
-      {province.cities.map((city, index) => (
-        <CityMarker
-          key={city.id}
-          coordinates={[
-            (city.coordinates[0] - province.center[0]) * 0.8,
-            (city.coordinates[1] - province.center[1]) * 0.8
-          ]}
-          isVisited={visitedCityIds.has(city.id)}
-          onClick={() => {
-            if (visitedCityIds.has(city.id)) {
-              const fp = visitedCities.find(v => v.cityId === city.id);
-              if (fp) handleRemoveCity(fp.id);
-            } else {
-              handleAddCity(city.id);
-            }
-          }}
-        />
-      ))}
-      
-      {visitedCities.map((footprint, idx) => {
-        const city = province.cities.find(c => c.id === footprint.cityId);
-        if (!city) return null;
+      {/* 城市网格 */}
+      {province.cities.map((city, index) => {
+        const row = Math.floor(index / cols);
+        const col = index % cols;
+        const x = (col - (cols - 1) / 2) * spacing;
+        const y = -(row - (Math.ceil(citiesCount / cols) - 1) / 2) * spacing;
+        const isVisited = visitedCityIds.has(city.id);
+        
         return (
-          <Flag3D
-            key={footprint.id}
-            position={[
-              (city.coordinates[0] - province.center[0]) * 0.8,
-              (city.coordinates[1] - province.center[1]) * 0.8,
-              0.5
-            ]}
-            size={0.25}
-          />
+          <group key={city.id}>
+            {/* 城市方块 */}
+            <mesh
+              position={[x, y, 0.1]}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isVisited) {
+                  const fp = visitedCities.find(v => v.cityId === city.id);
+                  if (fp) removeFootprint(fp.id);
+                } else {
+                  openModal(city.id);
+                }
+              }}
+            >
+              <boxGeometry args={[1.5, 1.5, 0.3]} />
+              <meshBasicMaterial
+                color={isVisited ? '#F59E0B' : '#475569'} />
+            </mesh>
+            
+            {/* 旗帜（已访问城市）*/}
+            {isVisited && (
+              <Flag3D
+                position={[x, y, 0.6]}
+                size={0.5}
+                color="#F59E0B"
+              />
+            )}
+          </group>
         );
       })}
     </group>
