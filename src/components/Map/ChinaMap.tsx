@@ -60,12 +60,6 @@ export function ChinaMap() {
 
   return (
     <group ref={groupRef}>
-      {/* 中央背景球 */}
-      <mesh position={[0, 0, -1]}>
-        <sphereGeometry args={[6, 32, 32]} />
-        <meshBasicMaterial color="#1a1f3a" />
-      </mesh>
-      
       {/* 渲染省份 */}
       {provincesData.map((province) => {
         const pos = provincePositions[province.id] || [0, 0];
