@@ -76,9 +76,38 @@ function Lights() {
   );
 }
 
+// 省份信息卡片组件
+function ProvinceInfoCard({ province, isVisited, visitedCityCount }: any) {
+  if (!province) return null;
+  
+  return (
+    <div className="absolute top-20 left-4 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-cyan-500/30 shadow-xl shadow-cyan-500/20 animate-fade-in">
+      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+        📍 {province.name}
+        {isVisited && (
+          <span className="bg-cyan-500 text-white text-xs px-2 py-1 rounded-full">已访问</span>
+        )}
+      </h3>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between text-slate-300">
+          <span>下辖城市</span>
+          <span className="font-mono">{province.cities.length}</span>
+        </div>
+        <div className="flex justify-between text-slate-300">
+          <span>已访问城市</span>
+          <span className="font-mono text-cyan-400">{visitedCityCount}</span>
+        </div>
+        <div className="pt-2 border-t border-slate-700">
+          <p className="text-slate-400 text-xs">点击进入添加足迹</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 省份名称标签组件
-function ProvinceLabels({ hoveredProvince, setHoveredProvince, setCurrentProvince }: any) {
-  const { hasVisitedProvince } = useStore();
+function ProvinceLabels({ hoveredProvince, setHoveredProvince, setCurrentProvince, onHoverProvince }: any) {
+  const { hasVisitedProvince, footprints } = useStore();
   
   return (
     <>
@@ -89,13 +118,20 @@ function ProvinceLabels({ hoveredProvince, setHoveredProvince, setCurrentProvinc
         const scale = 50;
         const isVisited = hasVisitedProvince(province.id);
         const isHovered = hoveredProvince === province.id;
+        const visitedCityCount = footprints.filter((f: any) => f.provinceId === province.id).length;
         
         return (
           <div
             key={province.id}
             onClick={() => setCurrentProvince(province.id)}
-            onMouseEnter={() => setHoveredProvince(province.id)}
-            onMouseLeave={() => setHoveredProvince(null)}
+            onMouseEnter={() => {
+              setHoveredProvince(province.id);
+              onHoverProvince(province, isVisited, visitedCityCount);
+            }}
+            onMouseLeave={() => {
+              setHoveredProvince(null);
+              onHoverProvince(null, false, 0);
+            }}
             className="province-label absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
             style={{
               left: `calc(50% + ${pos.x * scale}px)`,
@@ -186,6 +222,15 @@ export function MapScene() {
   const { currentView, setCurrentProvince, currentProvince, openModal, removeFootprint, footprints } = useStore();
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+  const [hoveredProvinceData, setHoveredProvinceData] = useState<any>(null);
+  const [hoveredProvinceVisited, setHoveredProvinceVisited] = useState(false);
+  const [hoveredProvinceCityCount, setHoveredProvinceCityCount] = useState(0);
+  
+  const handleHoverProvince = (province: any, isVisited: boolean, cityCount: number) => {
+    setHoveredProvinceData(province);
+    setHoveredProvinceVisited(isVisited);
+    setHoveredProvinceCityCount(cityCount);
+  };
   
   return (
     <div className="w-full h-full relative">
@@ -220,12 +265,22 @@ export function MapScene() {
         </Suspense>
       </Canvas>
       
+      {/* 省份信息卡片 */}
+      {currentView === 'china' && hoveredProvinceData && (
+        <ProvinceInfoCard
+          province={hoveredProvinceData}
+          isVisited={hoveredProvinceVisited}
+          visitedCityCount={hoveredProvinceCityCount}
+        />
+      )}
+      
       {/* 省份名称标签 */}
       {currentView === 'china' && (
         <ProvinceLabels
           hoveredProvince={hoveredProvince}
           setHoveredProvince={setHoveredProvince}
           setCurrentProvince={setCurrentProvince}
+          onHoverProvince={handleHoverProvince}
         />
       )}
 
