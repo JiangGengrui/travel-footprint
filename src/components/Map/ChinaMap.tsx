@@ -1,18 +1,46 @@
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { chinaGeoJSON } from '../../data/chinaGeoJSON';
 import { provincesData } from '../../data/provincesData';
 import { useStore } from '../../store/useStore';
-import { Province } from './Province';
 import { Flag3D } from '../Flag/Flag3D';
 
-// 归一化坐标到 -8 到 8 的范围
-const normalizeCoord = (lon: number, lat: number): [number, number] => {
-  // 中国大致范围: lon 73-135, lat 18-53
-  const x = ((lon - 104) / 31) * 8;
-  const y = ((lat - 35.5) / 17.5) * 8;
-  return [x, y];
+// 简单的省份布局
+const provincePositions: Record<string, [number, number]> = {
+  'beijing': [2, 3],
+  'tianjin': [2.5, 2.8],
+  'hebei': [2, 2],
+  'shanxi': [1, 2],
+  'neimenggu': [1, 4],
+  'liaoning': [3.5, 3.5],
+  'jilin': [4, 4],
+  'heilongjiang': [4, 5],
+  'shanghai': [3, 0],
+  'jiangsu': [2.5, 0.5],
+  'zhejiang': [2.5, -0.5],
+  'anhui': [2, 0.5],
+  'fujian': [3, -1.5],
+  'jiangxi': [2, -1],
+  'shandong': [2, 1.5],
+  'henan': [1, 0.5],
+  'hubei': [1, 0],
+  'hunan': [1, -1],
+  'guangdong': [1.5, -2.5],
+  'guangxi': [0.5, -2.5],
+  'hainan': [1, -3.5],
+  'chongqing': [-0.5, 0],
+  'sichuan': [-1.5, 0],
+  'guizhou': [-1, -1],
+  'yunnan': [-1.5, -2],
+  'xizang': [-3, 0],
+  'shaanxi': [0, 1],
+  'gansu': [-1, 2],
+  'qinghai': [-2.5, 1],
+  'ningxia': [0, 1.5],
+  'xinjiang': [-4, 2],
+  'taiwan': [4, -1.5],
+  'xianggang': [2, -2.3],
+  'aomen': [1.5, -2.4],
 };
 
 export function ChinaMap() {
@@ -30,44 +58,33 @@ export function ChinaMap() {
     setCurrentProvince(provinceId);
   };
 
-  const getFlagPosition = (provinceId: string) => {
-    const province = provincesData.find(p => p.id === provinceId);
-    if (province) {
-      return normalizeCoord(province.center[0], province.center[1]);
-    }
-    return [0, 0] as [number, number];
-  };
-
   return (
     <group ref={groupRef}>
-      {/* 简单的省份方块网格 */}
-      {chinaGeoJSON.features.map((feature, index) => {
-        const coords = feature.geometry.coordinates[0];
-        let centerX = 0, centerY = 0;
-        coords.forEach(([lon, lat]) => {
-          centerX += lon;
-          centerY += lat;
-        });
-        centerX /= coords.length;
-        centerY /= coords.length;
-        
-        const [nx, ny] = normalizeCoord(centerX, centerY);
-        const isVisited = hasVisitedProvince(feature.id as string);
+      {/* 中央测试大球 */}
+      <mesh position={[0, 0, -1]}>
+        <sphereGeometry args={[6, 32, 32]} />
+        <meshStandardMaterial color="#1e293b" />
+      </mesh>
+      
+      {/* 渲染省份 */}
+      {provincesData.map((province) => {
+        const pos = provincePositions[province.id] || [0, 0];
+        const isVisited = hasVisitedProvince(province.id);
         
         return (
           <mesh
-            key={feature.id}
-            position={[nx, ny, 0.1]}
+            key={province.id}
+            position={[pos[0] * 1.8, pos[1] * 1.8, 0.2]}
             onClick={(e) => {
               e.stopPropagation();
-              handleProvinceClick(feature.id as string);
+              handleProvinceClick(province.id);
             }}
           >
-            <boxGeometry args={[1.2, 1.2, 0.3]} />
+            <boxGeometry args={[1.5, 1.5, 0.4]} />
             <meshStandardMaterial
               color={isVisited ? '#22d3ee' : '#334155'}
               emissive={isVisited ? '#0891b2' : '#1e293b'}
-              emissiveIntensity={0.3}
+              emissiveIntensity={isVisited ? 0.4 : 0.2}
             />
           </mesh>
         );
@@ -75,11 +92,11 @@ export function ChinaMap() {
       
       {/* 旗帜 */}
       {footprints.map((footprint) => {
-        const position = getFlagPosition(footprint.provinceId);
+        const pos = provincePositions[footprint.provinceId] || [0, 0];
         return (
           <Flag3D
             key={footprint.id}
-            position={[position[0], position[1], 0.8]}
+            position={[pos[0] * 1.8, pos[1] * 1.8, 0.8]}
             size={0.6}
           />
         );
