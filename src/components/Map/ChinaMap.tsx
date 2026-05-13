@@ -60,10 +60,10 @@ export function ChinaMap() {
 
   return (
     <group ref={groupRef}>
-      {/* 中央测试大球 */}
+      {/* 中央背景球 */}
       <mesh position={[0, 0, -1]}>
         <sphereGeometry args={[6, 32, 32]} />
-        <meshStandardMaterial color="#1e293b" />
+        <meshBasicMaterial color="#1a1f3a" />
       </mesh>
       
       {/* 渲染省份 */}
@@ -81,10 +81,8 @@ export function ChinaMap() {
             }}
           >
             <boxGeometry args={[1.5, 1.5, 0.4]} />
-            <meshStandardMaterial
-              color={isVisited ? '#22d3ee' : '#334155'}
-              emissive={isVisited ? '#0891b2' : '#1e293b'}
-              emissiveIntensity={isVisited ? 0.4 : 0.2}
+            <meshBasicMaterial
+              color={isVisited ? '#22d3ee' : '#475569'}
             />
           </mesh>
         );

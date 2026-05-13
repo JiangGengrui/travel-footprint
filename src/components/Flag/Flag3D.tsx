@@ -38,23 +38,21 @@ export function Flag3D({ position, color = '#E53935', size = 0.3 }: Flag3DProps)
   return (
     <group ref={groupRef} position={position}>
       <mesh geometry={poleGeometry} position={[0, size, 0]}>
-        <meshStandardMaterial color="#8B7355" metalness={0.6} roughness={0.4} />
+        <meshBasicMaterial color="#8B7355" />
       </mesh>
       <mesh
         ref={flagRef}
         geometry={flagGeometry}
         position={[0, size * 1.1, 0]}
       >
-        <meshStandardMaterial
+        <meshBasicMaterial
           color={color}
           side={THREE.DoubleSide}
-          metalness={0.3}
-          roughness={0.6}
         />
       </mesh>
       <mesh position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.15, 16]} />
-        <meshStandardMaterial color="#4A5568" />
+        <meshBasicMaterial color="#4A5568" />
       </mesh>
     </group>
   );
