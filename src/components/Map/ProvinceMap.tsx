@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getProvinceById } from '../../data/provincesData';
@@ -8,6 +8,7 @@ import { Flag3D } from '../Flag/Flag3D';
 export function ProvinceMap() {
   const groupRef = useRef<THREE.Group>(null);
   const { currentProvince, footprints, setCurrentProvince, openModal, removeFootprint } = useStore();
+  const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   
   const province = getProvinceById(currentProvince || '');
 
@@ -44,12 +45,14 @@ export function ProvinceMap() {
         const x = (col - (cols - 1) / 2) * spacing;
         const y = -(row - (Math.ceil(citiesCount / cols) - 1) / 2) * spacing;
         const isVisited = visitedCityIds.has(city.id);
+        const isHovered = hoveredCity === city.id;
         
         return (
           <group key={city.id}>
             {/* 城市方块 */}
             <mesh
               position={[x, y, 0.1]}
+              scale={isHovered ? [1.1, 1.1, 1.1] : [1, 1, 1]}
               onClick={(e) => {
                 e.stopPropagation();
                 if (isVisited) {
@@ -59,10 +62,22 @@ export function ProvinceMap() {
                   openModal(city.id);
                 }
               }}
+              onPointerOver={() => setHoveredCity(city.id)}
+              onPointerOut={() => setHoveredCity(null)}
             >
-              <boxGeometry args={[1.5, 1.5, 0.3]} />
+              <boxGeometry args={[1.4, 1.4, 0.3]} />
               <meshBasicMaterial
                 color={isVisited ? '#F59E0B' : '#475569'} />
+            </mesh>
+
+            {/* 城市轮廓 */}
+            <mesh
+              position={[x, y, 0.3]}
+              scale={isHovered ? [1.12, 1.12, 1.12] : [1.02, 1.02, 1.02]}
+            >
+              <boxGeometry args={[1.45, 1.45, 0.05]} />
+              <meshBasicMaterial
+                color={isVisited ? '#D97706' : '#334155'} />
             </mesh>
             
             {/* 旗帜（已访问城市）*/}
