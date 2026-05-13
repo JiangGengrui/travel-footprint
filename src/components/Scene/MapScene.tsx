@@ -11,8 +11,8 @@ function CameraController() {
   
   useEffect(() => {
     if (currentView === 'china') {
-      camera.position.set(105, 45, 50);
-      camera.lookAt(105, 38, 0);
+      camera.position.set(0, 0, 25);
+      camera.lookAt(0, 0, 0);
     } else if (currentProvince) {
       camera.position.set(0, 0, 20);
       camera.lookAt(0, 0, 0);
@@ -25,14 +25,14 @@ function CameraController() {
 function Lights() {
   return (
     <>
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.6} />
       <directionalLight
-        position={[50, 30, 20]}
-        intensity={1.2}
-        color="#FFF5E6"
+        position={[10, 10, 10]}
+        intensity={1}
+        color="#FFFFFF"
       />
-      <pointLight position={[-30, 20, 10]} intensity={0.5} color="#22D3EE" />
-      <pointLight position={[30, -20, 10]} intensity={0.3} color="#F59E0B" />
+      <pointLight position={[-10, 10, 10]} intensity={0.5} color="#22D3EE" />
+      <pointLight position={[10, -10, 10]} intensity={0.3} color="#F59E0B" />
     </>
   );
 }
@@ -43,7 +43,7 @@ export function MapScene() {
   return (
     <div className="w-full h-full relative">
       <Canvas
-        camera={{ position: [105, 45, 50], fov: 45 }}
+        camera={{ position: [0, 0, 25], fov: 60 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'linear-gradient(180deg, #0F172A 0%, #1E293B 100%)' }}
       >
@@ -53,7 +53,7 @@ export function MapScene() {
           <Stars
             radius={100}
             depth={50}
-            count={3000}
+            count={2000}
             factor={4}
             saturation={0}
             fade
@@ -64,8 +64,8 @@ export function MapScene() {
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
-            minDistance={20}
-            maxDistance={100}
+            minDistance={10}
+            maxDistance={60}
             rotateSpeed={0.5}
             zoomSpeed={0.8}
           />
