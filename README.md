@@ -1,57 +1,71 @@
-# React + TypeScript + Vite
+# 🌍 旅游足迹记录器
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个精美的3D中国地图应用，记录你的旅行足迹！
 
-Currently, two official plugins are available:
+[🔗 查看部署指南](./DEPLOY.md)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ 功能特性
 
-## Expanding the ESLint configuration
+- 📍 **3D中国地图** - 可旋转、缩放、拖动
+- 🏴 **3D旗帜标记** - 在访问过的地方插上飘扬的旗帜
+- 📱 **全国地图视图** - 浏览整个中国
+- 🏙️ **省份详情视图** - 深入查看各省份
+- 💾 **自动保存** - 足迹数据永久保存
+- 📊 **实时统计** - 查看访问覆盖率
+- 🎨 **精美UI** - 深色主题 + 渐变效果
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 快速开始
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 本地运行
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+访问 http://localhost:5173
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 部署到 Vercel
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+详细步骤请查看 [DEPLOY.md](./DEPLOY.md)
+
+## 📸 截图
+
+（在真实浏览器中体验最佳效果！）
+
+## 🛠️ 技术栈
+
+- **React 18** - 前端框架
+- **TypeScript** - 类型安全
+- **Vite** - 构建工具
+- **Three.js** + **@react-three/fiber** - 3D渲染
+- **Zustand** - 状态管理 + 持久化
+- **Tailwind CSS** - 样式框架
+- **Noto Serif/Sans SC** - 中文字体
+
+## 📂 项目结构
+
 ```
+src/
+├── components/
+│   ├── Flag/          # 3D旗帜组件
+│   ├── Map/           # 地图组件
+│   ├── Scene/         # 3D场景
+│   └── UI/            # UI组件
+├── data/              # 地图和省份数据
+├── store/             # Zustand状态管理
+├── App.tsx            # 主应用
+└── main.tsx           # 入口文件
+```
+
+## 📝 使用说明
+
+1. 在全国地图上点击任意省份
+2. 进入该省份的详情视图
+3. 点击右下角的「添加足迹」按钮
+4. 选择你访问过的城市
+5. 旗帜会飘扬在地图上！
+
+## 📄 License
+
+MIT
