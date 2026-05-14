@@ -2,7 +2,7 @@
 import { Suspense, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
-import { ProvinceMap2D } from '../Map/ProvinceMap2D';
+import { ProvinceEChartsMap } from '../Map/ProvinceEChartsMap';
 import { provincesData, getProvinceById } from '../../data/provincesData';
 
 export function MapScene() {
@@ -38,7 +38,7 @@ export function MapScene() {
           onProvinceClick={setCurrentProvince}
         />
       ) : currentProvince ? (
-        <ProvinceMap2D
+        <ProvinceEChartsMap
           provinceId={currentProvince}
           onBack={handleBackToChina}
         />
