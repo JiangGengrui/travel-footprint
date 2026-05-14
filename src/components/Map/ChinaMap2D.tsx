@@ -1,7 +1,7 @@
 
 import { useState, useRef } from 'react';
-import { useStore } from '../store/useStore';
-import { PROVINCE_GEOMETRIES, MAP_CONFIG, geoToSvg } from '../data/chinaMap';
+import { useStore } from '../../store/useStore';
+import { PROVINCE_GEOMETRIES, MAP_CONFIG, geoToSvg } from '../../data/chinaMap';
 
 interface ChinaMap2DProps {
   onProvinceClick: (provinceId: string) => void;

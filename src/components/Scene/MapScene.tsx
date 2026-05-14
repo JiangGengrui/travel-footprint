@@ -1,9 +1,9 @@
 
 import { Suspense, useState } from 'react';
-import { useStore } from '../store/useStore';
-import { ChinaMap2D } from './Map/ChinaMap2D';
-import { ProvinceMap2D } from './Map/ProvinceMap2D';
-import { provincesData, getProvinceById } from '../data/provincesData';
+import { useStore } from '../../store/useStore';
+import { ChinaMap2D } from '../Map/ChinaMap2D';
+import { ProvinceMap2D } from '../Map/ProvinceMap2D';
+import { provincesData, getProvinceById } from '../../data/provincesData';
 
 export function MapScene() {
   const { 

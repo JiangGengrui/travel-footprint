@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useStore } from '../store/useStore';
-import { getProvinceById } from '../data/provincesData';
+import { useStore } from '../../store/useStore';
+import { getProvinceById } from '../../data/provincesData';
 
 interface ProvinceMap2DProps {
   provinceId: string;
