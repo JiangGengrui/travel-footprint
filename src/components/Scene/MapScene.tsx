@@ -1,7 +1,7 @@
 
 import { Suspense, useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { ChinaMap2D } from '../Map/ChinaMap2D';
+import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
 import { ProvinceMap2D } from '../Map/ProvinceMap2D';
 import { provincesData, getProvinceById } from '../../data/provincesData';
 
@@ -34,10 +34,8 @@ export function MapScene() {
     <div className="w-full h-full relative">
       {/* 2D地图渲染 */}
       {currentView === 'china' ? (
-        <ChinaMap2D
+        <ChinaEChartsMap
           onProvinceClick={setCurrentProvince}
-          onHover={setHoveredProvince}
-          hoveredProvince={hoveredProvince}
         />
       ) : currentProvince ? (
         <ProvinceMap2D
@@ -77,4 +75,3 @@ export function MapScene() {
     </div>
   );
 }
-
