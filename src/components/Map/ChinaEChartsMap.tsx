@@ -10,9 +10,9 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { footprints, hasVisitedProvince } = useStore();
 
-  // 更新地图数据的函数
   const updateMapData = () => {
     if (!chartInstanceRef.current) return;
 
@@ -155,21 +155,17 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       const chart = echarts.init(chartRef.current!);
       chartInstanceRef.current = chart;
       setIsLoading(true);
+      setError(null);
 
-      // 加载中国地图GeoJSON数据
       try {
-        const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
-        if (!response.ok) throw new Error('Failed to load map data');
+        const response = await fetch('/china.json');
+        if (!response.ok) throw new Error('地图数据加载失败');
         
         const chinaGeoJson = await response.json();
-        
-        // 注册中国地图
         echarts.registerMap('china', chinaGeoJson);
 
-        // 初始设置地图数据
         updateMapData();
 
-        // 点击事件
         chart.on('click', (params: any) => {
           if (params.name) {
             const provinceId = getProvinceId(params.name);
@@ -179,8 +175,9 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           }
         });
 
-      } catch (error) {
-        console.error('Failed to load China map:', error);
+      } catch (err) {
+        console.error('地图加载错误:', err);
+        setError('地图加载失败，请刷新重试');
       } finally {
         setIsLoading(false);
       }
@@ -188,7 +185,6 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
 
     initChart();
 
-    // 响应窗口大小变化
     const handleResize = () => {
       chartInstanceRef.current?.resize();
     };
@@ -198,9 +194,8 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       window.removeEventListener('resize', handleResize);
       chartInstanceRef.current?.dispose();
     };
-  }, []); // 只初始化一次
+  }, []);
 
-  // 当足迹变化时更新地图
   useEffect(() => {
     if (!isLoading) {
       updateMapData();
@@ -214,10 +209,14 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           <div className="text-white text-lg">加载地图中...</div>
         </div>
       )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
+          <div className="text-red-400 text-lg">{error}</div>
+        </div>
+      )}
       
       <div ref={chartRef} className="w-full h-full" />
       
-      {/* 缩放控制 */}
       <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
         <button
           onClick={() => {
@@ -233,7 +232,6 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
   );
 }
 
-// 获取省份的地理坐标
 function getProvinceGeoCoord(name: string): [number, number] | null {
   const coords: Record<string, [number, number]> = {
     '北京': [116.4, 39.9],
@@ -274,7 +272,6 @@ function getProvinceGeoCoord(name: string): [number, number] | null {
   return coords[name] || null;
 }
 
-// 根据省份名称获取ID
 function getProvinceId(name: string): string | null {
   const idMap: Record<string, string> = {
     '北京': 'beijing',
