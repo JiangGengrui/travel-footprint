@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { useStore } from '../../store/useStore';
 
@@ -9,7 +9,144 @@ interface ChinaEChartsMapProps {
 export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { footprints, hasVisitedProvince } = useStore();
+
+  // 更新地图数据的函数
+  const updateMapData = () => {
+    if (!chartInstanceRef.current) return;
+
+    const mapData = [
+      { name: '北京', id: 'beijing' },
+      { name: '天津', id: 'tianjin' },
+      { name: '河北', id: 'hebei' },
+      { name: '山西', id: 'shanxi' },
+      { name: '内蒙古', id: 'neimenggu' },
+      { name: '辽宁', id: 'liaoning' },
+      { name: '吉林', id: 'jilin' },
+      { name: '黑龙江', id: 'heilongjiang' },
+      { name: '上海', id: 'shanghai' },
+      { name: '江苏', id: 'jiangsu' },
+      { name: '浙江', id: 'zhejiang' },
+      { name: '安徽', id: 'anhui' },
+      { name: '福建', id: 'fujian' },
+      { name: '江西', id: 'jiangxi' },
+      { name: '山东', id: 'shandong' },
+      { name: '河南', id: 'henan' },
+      { name: '湖北', id: 'hubei' },
+      { name: '湖南', id: 'hunan' },
+      { name: '广东', id: 'guangdong' },
+      { name: '广西', id: 'guangxi' },
+      { name: '海南', id: 'hainan' },
+      { name: '重庆', id: 'chongqing' },
+      { name: '四川', id: 'sichuan' },
+      { name: '贵州', id: 'guizhou' },
+      { name: '云南', id: 'yunnan' },
+      { name: '西藏', id: 'xizang' },
+      { name: '陕西', id: 'shaanxi' },
+      { name: '甘肃', id: 'gansu' },
+      { name: '青海', id: 'qinghai' },
+      { name: '宁夏', id: 'ningxia' },
+      { name: '新疆', id: 'xinjiang' },
+      { name: '台湾', id: 'taiwan' },
+      { name: '香港', id: 'xianggang' },
+      { name: '澳门', id: 'aomen' },
+    ];
+
+    const visitedData = mapData.map(item => ({
+      ...item,
+      visited: hasVisitedProvince(item.id),
+    }));
+
+    const option = {
+      backgroundColor: '#1e293b',
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => {
+          if (params.name) {
+            const provinceId = getProvinceId(params.name);
+            const visited = provinceId ? hasVisitedProvince(provinceId) : false;
+            return `<div style="font-weight: bold;">${params.name}</div>
+                    <div style="color: ${visited ? '#22d3ee' : '#94a3b8'};">
+                      ${visited ? '✓ 已访问' : '未访问'}
+                    </div>`;
+          }
+          return '';
+        }
+      },
+      geo: {
+        map: 'china',
+        roam: true,
+        zoom: 1.2,
+        center: [105, 36],
+        scaleLimit: {
+          min: 0.8,
+          max: 6
+        },
+        label: {
+          show: true,
+          color: '#e2e8f0',
+          fontSize: 10,
+        },
+        emphasis: {
+          label: {
+            show: true,
+            color: '#fff',
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          itemStyle: {
+            areaColor: '#0891b2',
+            borderColor: '#22d3ee',
+            borderWidth: 2
+          }
+        },
+        itemStyle: {
+          areaColor: '#334155',
+          borderColor: '#64748b',
+          borderWidth: 1
+        },
+      },
+      series: [
+        {
+          name: '足迹',
+          type: 'map',
+          geoIndex: 0,
+          data: visitedData.filter(d => d.visited).map(d => ({
+            name: d.name,
+            value: 1
+          }))
+        },
+        {
+          name: '旗帜标记',
+          type: 'scatter',
+          coordinateSystem: 'geo',
+          symbol: 'path://M-10,0 L0,-10 L10,0 L0,5 Z',
+          symbolSize: 20,
+          data: visitedData
+            .filter(d => d.visited)
+            .map(d => {
+              const geoCoord = getProvinceGeoCoord(d.name);
+              return {
+                name: d.name,
+                value: geoCoord ? [...geoCoord, 1] : [0, 0, 1],
+                itemStyle: {
+                  color: '#ef4444'
+                }
+              };
+            }),
+          label: {
+            show: false
+          },
+          emphasis: {
+            scale: 1.5
+          }
+        }
+      ]
+    };
+
+    chartInstanceRef.current.setOption(option);
+  };
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -17,146 +154,20 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
     const initChart = async () => {
       const chart = echarts.init(chartRef.current!);
       chartInstanceRef.current = chart;
+      setIsLoading(true);
 
       // 加载中国地图GeoJSON数据
       try {
         const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
+        if (!response.ok) throw new Error('Failed to load map data');
+        
         const chinaGeoJson = await response.json();
         
         // 注册中国地图
         echarts.registerMap('china', chinaGeoJson);
 
-        // 准备数据
-        const mapData = [
-          { name: '北京', id: 'beijing' },
-          { name: '天津', id: 'tianjin' },
-          { name: '河北', id: 'hebei' },
-          { name: '山西', id: 'shanxi' },
-          { name: '内蒙古', id: 'neimenggu' },
-          { name: '辽宁', id: 'liaoning' },
-          { name: '吉林', id: 'jilin' },
-          { name: '黑龙江', id: 'heilongjiang' },
-          { name: '上海', id: 'shanghai' },
-          { name: '江苏', id: 'jiangsu' },
-          { name: '浙江', id: 'zhejiang' },
-          { name: '安徽', id: 'anhui' },
-          { name: '福建', id: 'fujian' },
-          { name: '江西', id: 'jiangxi' },
-          { name: '山东', id: 'shandong' },
-          { name: '河南', id: 'henan' },
-          { name: '湖北', id: 'hubei' },
-          { name: '湖南', id: 'hunan' },
-          { name: '广东', id: 'guangdong' },
-          { name: '广西', id: 'guangxi' },
-          { name: '海南', id: 'hainan' },
-          { name: '重庆', id: 'chongqing' },
-          { name: '四川', id: 'sichuan' },
-          { name: '贵州', id: 'guizhou' },
-          { name: '云南', id: 'yunnan' },
-          { name: '西藏', id: 'xizang' },
-          { name: '陕西', id: 'shaanxi' },
-          { name: '甘肃', id: 'gansu' },
-          { name: '青海', id: 'qinghai' },
-          { name: '宁夏', id: 'ningxia' },
-          { name: '新疆', id: 'xinjiang' },
-          { name: '台湾', id: 'taiwan' },
-          { name: '香港', id: 'xianggang' },
-          { name: '澳门', id: 'aomen' },
-        ];
-
-        const visitedData = mapData.map(item => ({
-          ...item,
-          visited: hasVisitedProvince(item.id),
-        }));
-
-        const option = {
-          backgroundColor: '#1e293b',
-          tooltip: {
-            trigger: 'item',
-            formatter: (params: any) => {
-              if (params.name) {
-                const provinceId = getProvinceId(params.name);
-                const visited = provinceId ? hasVisitedProvince(provinceId) : false;
-                return `<div style="font-weight: bold;">${params.name}</div>
-                        <div style="color: ${visited ? '#22d3ee' : '#94a3b8'};">
-                          ${visited ? '✓ 已访问' : '未访问'}
-                        </div>`;
-              }
-              return '';
-            }
-          },
-          geo: {
-            map: 'china',
-            roam: true,
-            zoom: 1.2,
-            center: [105, 36],
-            scaleLimit: {
-              min: 0.8,
-              max: 6
-            },
-            label: {
-              show: true,
-              color: '#e2e8f0',
-              fontSize: 10,
-            },
-            emphasis: {
-              label: {
-                show: true,
-                color: '#fff',
-                fontSize: 12,
-                fontWeight: 'bold'
-              },
-              itemStyle: {
-                areaColor: '#0891b2',
-                borderColor: '#22d3ee',
-                borderWidth: 2
-              }
-            },
-            itemStyle: {
-              areaColor: '#334155',
-              borderColor: '#64748b',
-              borderWidth: 1
-            },
-          },
-          series: [
-            {
-              name: '足迹',
-              type: 'map',
-              geoIndex: 0,
-              data: visitedData.filter(d => d.visited).map(d => ({
-                name: d.name,
-                value: 1
-              }))
-            },
-            {
-              name: '旗帜标记',
-              type: 'scatter',
-              coordinateSystem: 'geo',
-              symbol: 'path://M-10,0 L0,-10 L10,0 L0,5 Z',
-              symbolSize: 20,
-              data: visitedData
-                .filter(d => d.visited)
-                .map(d => {
-                  const geoCoord = getProvinceGeoCoord(d.name);
-                  return {
-                    name: d.name,
-                    value: geoCoord ? [...geoCoord, 1] : [0, 0, 1],
-                    itemStyle: {
-                      color: '#ef4444'
-                    }
-                  };
-                }),
-              label: {
-                show: false
-              },
-              emphasis: {
-                scale: 1.5
-              }
-            }
-          ]
-        };
-
-        chart.setOption(option);
+        // 初始设置地图数据
+        updateMapData();
 
         // 点击事件
         chart.on('click', (params: any) => {
@@ -170,6 +181,8 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
 
       } catch (error) {
         console.error('Failed to load China map:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -185,16 +198,31 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       window.removeEventListener('resize', handleResize);
       chartInstanceRef.current?.dispose();
     };
-  }, [footprints, onProvinceClick, hasVisitedProvince]);
+  }, []); // 只初始化一次
+
+  // 当足迹变化时更新地图
+  useEffect(() => {
+    if (!isLoading) {
+      updateMapData();
+    }
+  }, [footprints, isLoading]);
 
   return (
     <div className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
+          <div className="text-white text-lg">加载地图中...</div>
+        </div>
+      )}
+      
       <div ref={chartRef} className="w-full h-full" />
       
       {/* 缩放控制 */}
       <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
         <button
-          onClick={() => chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 })}
+          onClick={() => {
+            chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 });
+          }}
           className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-600"
           title="重置视图"
         >
