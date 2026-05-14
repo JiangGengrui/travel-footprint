@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { PROVINCE_GEOMETRIES, MAP_CONFIG, geoToSvg } from '../../data/chinaMap';
@@ -22,8 +21,8 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [viewStart, setViewStart] = useState({ centerLng: 0, centerLat: 0 });
   
-  const svgWidth = 800;
-  const svgHeight = 600;
+  const svgWidth = 1000;
+  const svgHeight = 700;
 
   // 鼠标滚轮缩放
   const handleWheel = (e: React.WheelEvent) => {
@@ -45,7 +44,7 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
     if (!isDragging) return;
     const dx = e.clientX - dragStart.x;
     const dy = e.clientY - dragStart.y;
-    const scale = 5 * view.zoom;
+    const scale = 6 * view.zoom;
     
     setView(v => ({
       ...v,
@@ -87,19 +86,19 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
       <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
         <button
           onClick={() => setView(v => ({ ...v, zoom: Math.min(MAP_CONFIG.maxZoom, v.zoom + 0.3) }))}
-          className="w-10 h-10 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg shadow-lg flex items-center justify-center text-xl"
+          className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-2xl border border-slate-600"
         >
           +
         </button>
         <button
           onClick={() => setView(v => ({ ...v, zoom: Math.max(MAP_CONFIG.minZoom, v.zoom - 0.3) }))}
-          className="w-10 h-10 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg shadow-lg flex items-center justify-center text-xl"
+          className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-2xl border border-slate-600"
         >
           −
         </button>
         <button
           onClick={resetView}
-          className="w-10 h-10 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg shadow-lg flex items-center justify-center text-sm"
+          className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-sm border border-slate-600"
         >
           ⟲
         </button>
@@ -120,15 +119,15 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
         {/* 渐变和阴影定义 */}
         <defs>
           <linearGradient id="provinceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#334155" />
-            <stop offset="100%" stopColor="#1e293b" />
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#334155" />
           </linearGradient>
           <linearGradient id="visitedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#0891b2" />
             <stop offset="100%" stopColor="#06b6d4" />
           </linearGradient>
-          <filter id="provinceShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
+          <filter id="provinceShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.4"/>
           </filter>
         </defs>
 
@@ -138,13 +137,22 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
           const isHovered = hoveredProvince === province.id;
           const [cx, cy] = project(province.center[0], province.center[1]);
           
+          const coords = province.coordinates;
+          const minLng = Math.min(...coords.map(c => c[0]));
+          const maxLng = Math.max(...coords.map(c => c[0]));
+          const minLat = Math.min(...coords.map(c => c[1]));
+          const maxLat = Math.max(...coords.map(c => c[1]));
+          
+          const sizeX = (maxLng - minLng) * 6 * view.zoom;
+          const sizeY = (maxLat - minLat) * 6 * view.zoom;
+          
           return (
             <g key={province.id}>
               {/* 省份多边形 */}
               <polygon
                 points={generatePolygonPoints(province)}
                 fill={isVisited ? 'url(#visitedGradient)' : 'url(#provinceGradient)'}
-                stroke={isHovered ? '#22d3ee' : isVisited ? '#0891b2' : '#475569'}
+                stroke={isHovered ? '#22d3ee' : isVisited ? '#0891b2' : '#64748b'}
                 strokeWidth={isHovered ? 3 : 1.5}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -154,7 +162,9 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
                 onMouseLeave={() => onHover(null)}
                 style={{
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  transformOrigin: `${cx}px ${cy}px`,
+                  transform: isHovered ? 'scale(1.03)' : 'scale(1)'
                 }}
                 filter={isHovered ? 'url(#provinceShadow)' : ''}
               />
@@ -166,14 +176,15 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill={isVisited ? '#a5f3fc' : '#e2e8f0'}
-                fontSize={Math.max(10, 12 / view.zoom)}
+                fontSize={Math.max(8, 13 / view.zoom)}
                 fontWeight={isHovered ? 'bold' : 'normal'}
                 pointerEvents="none"
                 style={{ 
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                  userSelect: 'none'
                 }}
               >
-                {province.name.length > 3 ? province.name.slice(0, 3) + '..' : province.name}
+                {province.name.length > 4 ? province.name.slice(0, 4) : province.name}
               </text>
               
               {/* 旗帜（已访问省份） */}
@@ -186,14 +197,14 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
                     x2={cx - 15 / view.zoom}
                     y2={cy + 10 / view.zoom}
                     stroke="#8b7355"
-                    strokeWidth={Math.max(1, 3 / view.zoom)}
+                    strokeWidth={Math.max(1.5, 4 / view.zoom)}
                   />
                   {/* 旗帜 */}
                   <polygon
                     points={`
                       ${cx - 15 / view.zoom},${cy - 25 / view.zoom} 
-                      ${cx + 15 / view.zoom},${cy - 18 / view.zoom} 
-                      ${cx - 15 / view.zoom},${cy - 10 / view.zoom}
+                      ${cx + 18 / view.zoom},${cy - 16 / view.zoom} 
+                      ${cx - 15 / view.zoom},${cy - 8 / view.zoom}
                     `}
                     fill="#ef4444"
                     style={{
@@ -212,7 +223,7 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
           {`
             @keyframes flagWave {
               0%, 100% { transform: rotate(0deg); }
-              50% { transform: rotate(3deg); }
+              50% { transform: rotate(4deg); }
             }
           `}
         </style>
@@ -220,4 +231,3 @@ export function ChinaMap2D({ onProvinceClick, onHover, hoveredProvince }: ChinaM
     </div>
   );
 }
-
