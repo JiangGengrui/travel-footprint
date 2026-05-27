@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { useStore } from '../../store/useStore';
-import { getProvinceById } from '../../data/provincesData';
+import { getProvinceById, Province, City } from '../../data/provincesData';
 
 interface ProvinceEChartsMapProps {
   provinceId: string;
@@ -56,10 +56,8 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     return adcodeMap[provinceId] || '';
   };
 
-  const getCityGeoCoord = (cityName: string): [number, number] | null => {
-    if (!province) return null;
-    const city = province.cities.find(c => c.name === cityName);
-    return city ? [Math.random() * 2 + 110, Math.random() * 2 + 30] : null;
+  const getCityGeoCoord = (city: City): [number, number] | null => {
+    return city.coordinates || null;
   };
 
   const updateMapData = () => {
@@ -73,8 +71,14 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     const cityData = cities.map(city => ({
       name: city.name,
       id: city.id,
-      visited: visitedCityIds.has(city.id)
+      visited: visitedCityIds.has(city.id),
+      coords: city.coordinates
     }));
+
+    const visitedCities = cityData.filter(d => d.visited).map(d => ({
+      name: d.name,
+      value: d.coords ? [...d.coords, 1] : null
+    })).filter(d => d.value !== null);
 
     const option = {
       backgroundColor: '#1e293b',
@@ -98,10 +102,11 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       geo: {
         map: provinceId,
         roam: true,
-        zoom: 1.2,
+        zoom: 1.5,
+        center: province.center,
         scaleLimit: {
-          min: 0.8,
-          max: 6
+          min: 0.5,
+          max: 10
         },
         label: {
           show: true,
@@ -142,21 +147,14 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
           type: 'scatter',
           coordinateSystem: 'geo',
           symbol: 'path://M-10,0 L0,-10 L10,0 L0,5 Z',
-          symbolSize: 20,
-          data: cityData
-            .filter(d => d.visited)
-            .map(d => {
-              const geoCoord = getCityGeoCoord(d.name);
-              return {
-                name: d.name,
-                value: geoCoord ? [...geoCoord, 1] : [0, 0, 1],
-                itemStyle: {
-                  color: '#ef4444'
-                }
-              };
-            }),
+          symbolSize: 25,
+          data: visitedCities as any,
           label: {
-            show: false
+            show: true,
+            position: 'right',
+            formatter: '{b}',
+            color: '#fef3c7',
+            fontSize: 12,
           },
           emphasis: {
             scale: 1.5
@@ -178,28 +176,36 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       setError(null);
 
       const adcode = getProvinceAdcode(provinceId);
-      let response: Response | null = null;
+      let mapLoaded = false;
 
       try {
-        response = await fetch(`/provinces/${adcode}.json`);
-        if (!response.ok) {
-          throw new Error('本地数据加载失败');
-        }
-        const provinceGeoJson = await response.json();
-        echarts.registerMap(provinceId, provinceGeoJson);
-      } catch (localErr) {
-        console.warn('本地数据加载失败，尝试远程:', localErr);
-        try {
-          response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
-          if (!response.ok) throw new Error('远程数据也加载失败');
+        const response = await fetch(`/provinces/${adcode}.json`);
+        if (response.ok) {
           const provinceGeoJson = await response.json();
           echarts.registerMap(provinceId, provinceGeoJson);
-        } catch (remoteErr) {
-          console.error('所有数据源都失败:', remoteErr);
-          setError('该省份地图数据暂不可用');
-          setIsLoading(false);
-          return;
+          mapLoaded = true;
         }
+      } catch (err) {
+        console.warn('本地数据加载失败:', err);
+      }
+
+      if (!mapLoaded) {
+        try {
+          const response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
+          if (response.ok) {
+            const provinceGeoJson = await response.json();
+            echarts.registerMap(provinceId, provinceGeoJson);
+            mapLoaded = true;
+          }
+        } catch (err) {
+          console.warn('远程数据加载失败:', err);
+        }
+      }
+
+      if (!mapLoaded) {
+        setError('地图数据加载失败');
+        setIsLoading(false);
+        return;
       }
 
       updateMapData();
@@ -254,7 +260,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
 
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
-          <div className="text-white text-lg">加载地图中...</div>
+          <div className="text-white text-lg">加载{province.name}地图中...</div>
         </div>
       )}
       {error && (
@@ -268,7 +274,14 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
         <button
           onClick={() => {
-            chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 });
+            if (chartInstanceRef.current && province) {
+              chartInstanceRef.current.setOption({
+                geo: {
+                  zoom: 1.5,
+                  center: province.center
+                }
+              });
+            }
           }}
           className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-600"
           title="重置视图"
