@@ -1,12 +1,11 @@
 import { ErrorBoundary } from './components/Scene/ErrorBoundary';
 import { MapScene } from './components/Scene/MapScene';
 import { StatsPanel } from './components/UI/StatsPanel';
-import { BackButton } from './components/UI/BackButton';
 import { AddFootprintModal } from './components/UI/AddFootprintModal';
 import { useStore } from './store/useStore';
 
 function App() {
-  const { currentView, setCurrentProvince, openModal } = useStore();
+  const { currentView, openModal } = useStore();
 
   return (
     <div className="w-full h-screen bg-white relative overflow-hidden">
@@ -15,7 +14,6 @@ function App() {
           <MapScene />
         </ErrorBoundary>
         <StatsPanel />
-        <BackButton />
         
         {currentView === 'province' && (
           <button

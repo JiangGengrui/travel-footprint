@@ -8,13 +8,22 @@ interface ProvinceEChartsMapProps {
   onBack?: () => void;
 }
 
-export function ProvinceEChartsMap({ provinceId }: ProvinceEChartsMapProps) {
+export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { footprints, openModal, removeFootprint } = useStore();
+  const { footprints, openModal, removeFootprint, setCurrentView, setCurrentProvince } = useStore();
   const province = getProvinceById(provinceId);
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      setCurrentView('china');
+      setCurrentProvince(null);
+    }
+  };
 
   const getProvinceAdcode = (provinceId: string): string => {
     const adcodeMap: Record<string, string> = {
@@ -238,6 +247,14 @@ export function ProvinceEChartsMap({ provinceId }: ProvinceEChartsMapProps) {
 
   return (
     <div className="relative w-full h-full bg-white">
+      <button
+        onClick={handleBack}
+        className="absolute top-4 left-4 z-10 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-300 shadow-lg transition-all duration-300 flex items-center gap-2"
+      >
+        <span>←</span>
+        <span>返回全国</span>
+      </button>
+      
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
           <div className="text-slate-700 text-lg">加载{province.name}地图中...</div>
