@@ -44,13 +44,13 @@ export function AddFootprintModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-      <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-slideUp">
-        <div className="p-6 border-b border-slate-700/50">
-          <h2 className="text-2xl font-serif text-amber-400">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+      <div className="bg-white backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-slideUp">
+        <div className="p-6 border-b border-slate-200">
+          <h2 className="text-2xl font-serif text-amber-600">
             🗺️ 在 {province.name} 添加足迹
           </h2>
-          <p className="text-slate-400 text-sm mt-2">选择你访问过的地点</p>
+          <p className="text-slate-600 text-sm mt-2">选择你访问过的地点</p>
         </div>
         
         <div className="p-6 max-h-80 overflow-y-auto">
@@ -67,25 +67,25 @@ export function AddFootprintModal() {
                   className={`
                     p-3 rounded-xl border transition-all duration-300 text-left
                     ${isSelected 
-                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' 
+                      ? 'bg-cyan-50 border-cyan-500 text-cyan-700' 
                       : isVisited
-                        ? 'bg-slate-800/50 border-slate-700/30 text-slate-500 cursor-not-allowed'
-                        : 'bg-slate-800/50 border-slate-700/50 text-slate-200 hover:border-slate-600 hover:bg-slate-700/50'
+                        ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50'
                     }
                   `}
                 >
                   <div className="font-medium">{city.name}</div>
-                  {isVisited && <div className="text-xs text-amber-400 mt-1">✓ 已添加</div>}
+                  {isVisited && <div className="text-xs text-amber-600 mt-1">✓ 已添加</div>}
                 </button>
               );
             })}
           </div>
         </div>
         
-        <div className="p-6 border-t border-slate-700/50 flex gap-3">
+        <div className="p-6 border-t border-slate-200 flex gap-3">
           <button
             onClick={handleClose}
-            className="flex-1 px-4 py-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
+            className="flex-1 px-4 py-3 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
           >
             取消
           </button>
@@ -96,7 +96,7 @@ export function AddFootprintModal() {
               flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300
               ${selectedCity
                 ? 'bg-gradient-to-r from-cyan-500 to-amber-500 text-white hover:shadow-lg hover:shadow-cyan-500/25'
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }
             `}
           >

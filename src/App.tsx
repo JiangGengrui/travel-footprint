@@ -9,12 +9,7 @@ function App() {
   const { currentView, setCurrentProvince, openModal } = useStore();
 
   return (
-    <div className="w-full h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-      </div>
-      
+    <div className="w-full h-screen bg-white relative overflow-hidden">
       <div className="relative z-10 h-full">
         <ErrorBoundary>
           <MapScene />
@@ -34,8 +29,6 @@ function App() {
       </div>
       
       <AddFootprintModal />
-      
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
     </div>
   );
 }
