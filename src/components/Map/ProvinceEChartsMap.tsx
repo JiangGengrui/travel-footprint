@@ -172,41 +172,47 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       setError(null);
 
       const adcode = getProvinceAdcode(provinceId);
+      let provinceGeoJson;
       
       try {
-        const response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
-        
-        if (!response.ok) {
-          throw new Error('地图数据加载失败');
+        try {
+          const response = await fetch(`/provinces/${adcode}.json`);
+          if (response.ok) {
+            provinceGeoJson = await response.json();
+          } else {
+            throw new Error('本地地图加载失败');
+          }
+        } catch (localErr) {
+          console.warn('本地地图加载失败，尝试远程:', localErr);
+          const response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
+          if (!response.ok) throw new Error('远程地图加载失败');
+          provinceGeoJson = await response.json();
         }
-        
-        const provinceGeoJson = await response.json();
+
         echarts.registerMap(provinceId, provinceGeoJson);
-      } catch (err) {
-        console.error('省份地图加载错误:', err);
-        setError('地图数据加载失败');
-        setIsLoading(false);
-        return;
-      }
+        updateMapData();
 
-      updateMapData();
-
-      chart.on('click', (params: any) => {
-        if (params.name) {
-          const city = province.cities.find(c => c.name === params.name);
-          if (city) {
-            const isVisited = footprints.some(f => f.provinceId === provinceId && f.cityId === city.id);
-            if (isVisited) {
-              const fp = footprints.find(f => f.provinceId === provinceId && f.cityId === city.id);
-              if (fp) removeFootprint(fp.id);
-            } else {
-              openModal(city.id);
+        chart.on('click', (params: any) => {
+          if (params.name) {
+            const city = province.cities.find(c => c.name === params.name);
+            if (city) {
+              const isVisited = footprints.some(f => f.provinceId === provinceId && f.cityId === city.id);
+              if (isVisited) {
+                const fp = footprints.find(f => f.provinceId === provinceId && f.cityId === city.id);
+                if (fp) removeFootprint(fp.id);
+              } else {
+                openModal(city.id);
+              }
             }
           }
-        }
-      });
+        });
 
-      setIsLoading(false);
+      } catch (err) {
+        console.error('地图加载错误:', err);
+        setError('地图数据加载失败');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initChart();
@@ -234,7 +240,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     <div className="relative w-full h-full bg-white">
       <button
         onClick={onBack}
-        className="absolute top-4 left-4 z-10 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg shadow-lg flex items-center gap-2 border border-slate-300"
+        className="absolute top-4 left-4 z-10 px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl shadow-lg flex items-center gap-2 border border-slate-300"
       >
         ← 返回全国
       </button>

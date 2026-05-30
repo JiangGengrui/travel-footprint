@@ -158,12 +158,22 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       setError(null);
 
       try {
-        const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
-        if (!response.ok) throw new Error('地图数据加载失败');
-        
-        const chinaGeoJson = await response.json();
-        echarts.registerMap('china', chinaGeoJson);
+        let chinaGeoJson;
+        try {
+          const response = await fetch('/china.json');
+          if (response.ok) {
+            chinaGeoJson = await response.json();
+          } else {
+            throw new Error('本地文件加载失败');
+          }
+        } catch (localErr) {
+          console.warn('本地地图加载失败，尝试远程:', localErr);
+          const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
+          if (!response.ok) throw new Error('远程地图加载失败');
+          chinaGeoJson = await response.json();
+        }
 
+        echarts.registerMap('china', chinaGeoJson);
         updateMapData();
 
         chart.on('click', (params: any) => {
