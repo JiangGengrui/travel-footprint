@@ -59,7 +59,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
     }));
 
     const option = {
-      backgroundColor: '#1e293b',
+      backgroundColor: '#FFFFFF',
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
@@ -67,7 +67,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
             const provinceId = getProvinceId(params.name);
             const visited = provinceId ? hasVisitedProvince(provinceId) : false;
             return `<div style="font-weight: bold;">${params.name}</div>
-                    <div style="color: ${visited ? '#22d3ee' : '#94a3b8'};">
+                    <div style="color: ${visited ? '#0D9488' : '#64748b'};">
                       ${visited ? '✓ 已访问' : '未访问'}
                     </div>`;
           }
@@ -85,25 +85,25 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
         },
         label: {
           show: true,
-          color: '#e2e8f0',
+          color: '#475569',
           fontSize: 10,
         },
         emphasis: {
           label: {
             show: true,
-            color: '#fff',
+            color: '#1E293B',
             fontSize: 12,
             fontWeight: 'bold'
           },
           itemStyle: {
-            areaColor: '#0891b2',
-            borderColor: '#22d3ee',
+            areaColor: '#0891B2',
+            borderColor: '#0D9488',
             borderWidth: 2
           }
         },
         itemStyle: {
-          areaColor: '#334155',
-          borderColor: '#64748b',
+          areaColor: '#E2E8F0',
+          borderColor: '#94A3B8',
           borderWidth: 1
         },
       },
@@ -131,7 +131,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
                 name: d.name,
                 value: geoCoord ? [...geoCoord, 1] : [0, 0, 1],
                 itemStyle: {
-                  color: '#ef4444'
+                  color: '#EF4444'
                 }
               };
             }),
@@ -158,7 +158,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       setError(null);
 
       try {
-        const response = await fetch('/china.json');
+        const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
         if (!response.ok) throw new Error('地图数据加载失败');
         
         const chinaGeoJson = await response.json();
@@ -203,15 +203,15 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
   }, [footprints, isLoading]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-white">
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
-          <div className="text-white text-lg">加载地图中...</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+          <div className="text-slate-700 text-lg">加载地图中...</div>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
-          <div className="text-red-400 text-lg">{error}</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+          <div className="text-red-500 text-lg">{error}</div>
         </div>
       )}
       
@@ -222,7 +222,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           onClick={() => {
             chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 });
           }}
-          className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-600"
+          className="w-12 h-12 bg-white hover:bg-slate-100 text-slate-700 rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-300"
           title="重置视图"
         >
           ⟲

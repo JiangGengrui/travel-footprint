@@ -56,10 +56,6 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     return adcodeMap[provinceId] || '';
   };
 
-  const getCityGeoCoord = (city: City): [number, number] | null => {
-    return city.coordinates || null;
-  };
-
   const updateMapData = () => {
     if (!chartInstanceRef.current || !province) return;
 
@@ -81,7 +77,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     })).filter(d => d.value !== null);
 
     const option = {
-      backgroundColor: '#1e293b',
+      backgroundColor: '#FFFFFF',
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
@@ -89,10 +85,10 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
             const city = province.cities.find(c => c.name === params.name);
             const isVisited = city ? visitedCityIds.has(city.id) : false;
             return `<div style="font-weight: bold;">${params.name}</div>
-                    <div style="color: ${isVisited ? '#22d3ee' : '#94a3b8'};">
+                    <div style="color: ${isVisited ? '#0D9488' : '#64748b'};">
                       ${isVisited ? '✓ 已访问' : '未访问'}
                     </div>
-                    <div style="color: #64748b; font-size: 12px;">
+                    <div style="color: #94A3B8; font-size: 12px;">
                       ${isVisited ? '点击取消标记' : '点击添加足迹'}
                     </div>`;
           }
@@ -110,25 +106,25 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
         },
         label: {
           show: true,
-          color: '#e2e8f0',
+          color: '#475569',
           fontSize: 10,
         },
         emphasis: {
           label: {
             show: true,
-            color: '#fff',
+            color: '#1E293B',
             fontSize: 12,
             fontWeight: 'bold'
           },
           itemStyle: {
-            areaColor: '#0891b2',
-            borderColor: '#22d3ee',
+            areaColor: '#0891B2',
+            borderColor: '#0D9488',
             borderWidth: 2
           }
         },
         itemStyle: {
-          areaColor: '#334155',
-          borderColor: '#64748b',
+          areaColor: '#E2E8F0',
+          borderColor: '#94A3B8',
           borderWidth: 1
         },
       },
@@ -153,7 +149,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
             show: true,
             position: 'right',
             formatter: '{b}',
-            color: '#fef3c7',
+            color: '#1E293B',
             fontSize: 12,
           },
           emphasis: {
@@ -176,33 +172,18 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       setError(null);
 
       const adcode = getProvinceAdcode(provinceId);
-      let mapLoaded = false;
-
+      
       try {
-        const response = await fetch(`/provinces/${adcode}.json`);
-        if (response.ok) {
-          const provinceGeoJson = await response.json();
-          echarts.registerMap(provinceId, provinceGeoJson);
-          mapLoaded = true;
+        const response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
+        
+        if (!response.ok) {
+          throw new Error('地图数据加载失败');
         }
+        
+        const provinceGeoJson = await response.json();
+        echarts.registerMap(provinceId, provinceGeoJson);
       } catch (err) {
-        console.warn('本地数据加载失败:', err);
-      }
-
-      if (!mapLoaded) {
-        try {
-          const response = await fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${adcode}_full.json`);
-          if (response.ok) {
-            const provinceGeoJson = await response.json();
-            echarts.registerMap(provinceId, provinceGeoJson);
-            mapLoaded = true;
-          }
-        } catch (err) {
-          console.warn('远程数据加载失败:', err);
-        }
-      }
-
-      if (!mapLoaded) {
+        console.error('省份地图加载错误:', err);
         setError('地图数据加载失败');
         setIsLoading(false);
         return;
@@ -250,22 +231,22 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
   if (!province) return null;
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-white">
       <button
         onClick={onBack}
-        className="absolute top-4 left-4 z-10 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg shadow-lg flex items-center gap-2"
+        className="absolute top-4 left-4 z-10 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg shadow-lg flex items-center gap-2 border border-slate-300"
       >
         ← 返回全国
       </button>
 
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
-          <div className="text-white text-lg">加载{province.name}地图中...</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+          <div className="text-slate-700 text-lg">加载{province.name}地图中...</div>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
-          <div className="text-red-400 text-lg">{error}</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+          <div className="text-red-500 text-lg">{error}</div>
         </div>
       )}
       
@@ -283,7 +264,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
               });
             }
           }}
-          className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-600"
+          className="w-12 h-12 bg-white hover:bg-slate-100 text-slate-700 rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-300"
           title="重置视图"
         >
           ⟲
