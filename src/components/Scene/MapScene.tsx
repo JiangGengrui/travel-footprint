@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
 import { ProvinceEChartsMap } from '../Map/ProvinceEChartsMap';
@@ -28,23 +28,43 @@ export function MapScene() {
   const handleProvinceClick = (provinceId: string) => {
     setCurrentView('province');
     setCurrentProvince(provinceId);
+    window.history.pushState({ page: 'province', provinceId }, '', '#province');
   };
 
   const handleBackToChina = () => {
     setCurrentView('china');
     setCurrentProvince(null);
+    window.history.pushState({ page: 'china' }, '', '');
   };
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.page === 'china') {
+        setCurrentView('china');
+        setCurrentProvince(null);
+      } else if (event.state && event.state.page === 'province') {
+        setCurrentView('province');
+        setCurrentProvince(event.state.provinceId);
+      } else {
+        setCurrentView('china');
+        setCurrentProvince(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setCurrentView, setCurrentProvince]);
 
   return (
     <div className="w-full h-full relative">
-      {currentView === 'china' || !currentProvince ? (
-        <ChinaEChartsMap
-          onProvinceClick={handleProvinceClick}
-        />
-      ) : (
+      {currentView === 'province' && currentProvince ? (
         <ProvinceEChartsMap
           provinceId={currentProvince}
           onBack={handleBackToChina}
+        />
+      ) : (
+        <ChinaEChartsMap
+          onProvinceClick={handleProvinceClick}
         />
       )}
       
