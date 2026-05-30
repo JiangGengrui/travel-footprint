@@ -5,10 +5,10 @@ import { getProvinceById, Province, City } from '../../data/provincesData';
 
 interface ProvinceEChartsMapProps {
   provinceId: string;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
-export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapProps) {
+export function ProvinceEChartsMap({ provinceId }: ProvinceEChartsMapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,7 +85,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
             const city = province.cities.find(c => c.name === params.name);
             const isVisited = city ? visitedCityIds.has(city.id) : false;
             return `<div style="font-weight: bold;">${params.name}</div>
-                    <div style="color: ${isVisited ? '#0D9488' : '#64748b'};">
+                    <div style="color: ${isVisited ? '#0D9488' : '#64748B'};">
                       ${isVisited ? '✓ 已访问' : '未访问'}
                     </div>
                     <div style="color: #94A3B8; font-size: 12px;">
@@ -238,13 +238,6 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
 
   return (
     <div className="relative w-full h-full bg-white">
-      <button
-        onClick={onBack}
-        className="absolute top-4 left-4 z-10 px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl shadow-lg flex items-center gap-2 border border-slate-300"
-      >
-        ← 返回全国
-      </button>
-
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
           <div className="text-slate-700 text-lg">加载{province.name}地图中...</div>
