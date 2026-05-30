@@ -1,9 +1,8 @@
-
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
 import { ProvinceEChartsMap } from '../Map/ProvinceEChartsMap';
-import { provincesData, getProvinceById } from '../../data/provincesData';
+import { provincesData } from '../../data/provincesData';
 
 export function MapScene() {
   const { 
@@ -11,7 +10,8 @@ export function MapScene() {
     setCurrentProvince, 
     currentProvince, 
     footprints, 
-    getProvincesVisited 
+    getProvincesVisited,
+    setCurrentView 
   } = useStore();
   
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
@@ -25,22 +25,28 @@ export function MapScene() {
     ? footprints.filter(f => f.provinceId === hoveredProvince).length 
     : 0;
 
+  const handleProvinceClick = (provinceId: string) => {
+    setCurrentView('province');
+    setCurrentProvince(provinceId);
+  };
+
   const handleBackToChina = () => {
+    setCurrentView('china');
     setCurrentProvince(null);
   };
 
   return (
     <div className="w-full h-full relative">
-      {currentView === 'china' ? (
+      {currentView === 'china' || !currentProvince ? (
         <ChinaEChartsMap
-          onProvinceClick={setCurrentProvince}
+          onProvinceClick={handleProvinceClick}
         />
-      ) : currentProvince ? (
+      ) : (
         <ProvinceEChartsMap
           provinceId={currentProvince}
           onBack={handleBackToChina}
         />
-      ) : null}
+      )}
       
       {currentView === 'china' && hoveredProvinceData && (
         <div className="absolute top-20 left-4 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-300 shadow-xl animate-fade-in z-20">
