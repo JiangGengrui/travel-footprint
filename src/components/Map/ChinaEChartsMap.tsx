@@ -227,7 +227,7 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
       
       <div ref={chartRef} className="w-full h-full" />
       
-      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+      <div className="absolute bottom-24 right-4 z-10 flex flex-col gap-2">
         <button
           onClick={() => {
             chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 });
