@@ -13,7 +13,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { footprints, openModal, removeFootprint, setCurrentView, setCurrentProvince } = useStore();
+  const { footprints, addFootprint, removeFootprint, setCurrentView, setCurrentProvince } = useStore();
   const province = getProvinceById(provinceId);
 
   const handleBack = () => {
@@ -210,7 +210,11 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
                 const fp = footprints.find(f => f.provinceId === provinceId && f.cityId === city.id);
                 if (fp) removeFootprint(fp.id);
               } else {
-                openModal(city.id);
+                addFootprint({
+                  provinceId: provinceId,
+                  cityId: city.id,
+                  cityName: city.name,
+                });
               }
             }
           }
