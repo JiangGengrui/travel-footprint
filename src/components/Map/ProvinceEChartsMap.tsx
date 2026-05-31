@@ -15,6 +15,26 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
   const [error, setError] = useState<string | null>(null);
   const { footprints, addFootprint, removeFootprint, setCurrentView, setCurrentProvince } = useStore();
   const province = getProvinceById(provinceId);
+  
+  // 使用ref保存最新状态，避免闭包问题
+  const stateRef = useRef({
+    footprints,
+    addFootprint,
+    removeFootprint,
+    provinceId,
+    province
+  });
+  
+  // 更新ref
+  useEffect(() => {
+    stateRef.current = {
+      footprints,
+      addFootprint,
+      removeFootprint,
+      provinceId,
+      province
+    };
+  }, [footprints, addFootprint, removeFootprint, provinceId, province]);
 
   const handleBack = () => {
     if (onBack) {
@@ -203,6 +223,9 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
 
         chart.on('click', (params: any) => {
           if (params.name) {
+            const { footprints, addFootprint, removeFootprint, provinceId, province } = stateRef.current;
+            if (!province) return;
+            
             const city = province.cities.find(c => c.name === params.name);
             if (city) {
               const isVisited = footprints.some(f => f.provinceId === provinceId && f.cityId === city.id);
