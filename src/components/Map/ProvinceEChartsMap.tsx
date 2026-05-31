@@ -268,7 +268,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       
       <div ref={chartRef} className="w-full h-full" />
       
-      <div className="absolute bottom-32 right-4 z-10 flex flex-col gap-2">
+      <div className="absolute bottom-36 right-20 z-10 flex flex-col gap-2">
         <button
           onClick={() => {
             if (chartInstanceRef.current && province) {
