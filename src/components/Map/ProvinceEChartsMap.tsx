@@ -111,15 +111,26 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
         trigger: 'item',
         formatter: (params: any) => {
           if (params.name) {
-            const city = province.cities.find(c => c.name === params.name);
+            const clickedName = params.name;
+            let city = province.cities.find(c => c.name === clickedName);
+            
+            if (!city) {
+              const normalizedName = clickedName.replace(/(市|区|县|旗)$/, '');
+              city = province.cities.find(c => 
+                c.name === normalizedName || 
+                normalizedName.includes(c.name) || 
+                c.name.includes(normalizedName)
+              );
+            }
+            
             const isVisited = city ? visitedCityIds.has(city.id) : false;
             return `<div style="font-weight: bold;">${params.name}</div>
-                    <div style="color: ${isVisited ? '#0D9488' : '#64748B'};">
-                      ${isVisited ? '✓ 已访问' : '未访问'}
+                    ${city ? `<div style="color: ${isVisited ? '#0D9488' : '#64748B'};">
+                      ${isVisited ? '✓ 已访问' : '○ 未访问'}
                     </div>
                     <div style="color: #94A3B8; font-size: 12px;">
                       ${isVisited ? '点击取消标记' : '点击添加足迹'}
-                    </div>`;
+                    </div>` : '<div style="color: #94A3B8; font-size: 12px;">点击空白区域返回全国地图</div>'}`;
           }
           return '';
         }
@@ -226,7 +237,21 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
             const { footprints, addFootprint, removeFootprint, provinceId, province } = stateRef.current;
             if (!province) return;
             
-            const city = province.cities.find(c => c.name === params.name);
+            const clickedName = params.name;
+            
+            // 精确匹配或模糊匹配城市名称
+            let city = province.cities.find(c => c.name === clickedName);
+            
+            // 如果精确匹配失败，尝试模糊匹配（去掉"市"、"区"、"县"、"旗"等后缀）
+            if (!city) {
+              const normalizedName = clickedName.replace(/(市|区|县|旗)$/, '');
+              city = province.cities.find(c => 
+                c.name === normalizedName || 
+                normalizedName.includes(c.name) || 
+                c.name.includes(normalizedName)
+              );
+            }
+            
             if (city) {
               const isVisited = footprints.some(f => f.provinceId === provinceId && f.cityId === city.id);
               if (isVisited) {
