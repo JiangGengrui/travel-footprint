@@ -301,20 +301,33 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     <div className="relative w-full h-full bg-white">
       <button
         onClick={handleBack}
-        className="absolute top-4 left-4 z-10 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-300 shadow-lg transition-all duration-300 flex items-center gap-2"
+        className="absolute top-4 left-4 z-30 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-300 shadow-lg transition-all duration-300 flex items-center gap-2"
       >
         <span>←</span>
         <span>返回全国</span>
       </button>
       
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/95 z-20 gap-6">
           <div className="text-slate-700 text-lg">加载{province.name}地图中...</div>
+          <button
+            onClick={handleBack}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
+          >
+            取消并返回
+          </button>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/95 z-20 gap-6">
           <div className="text-red-500 text-lg">{error}</div>
+          <div className="text-slate-500 text-sm">该省份地图暂不可用，你可以点击其他省份</div>
+          <button
+            onClick={handleBack}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
+          >
+            返回全国地图
+          </button>
         </div>
       )}
       
