@@ -6,9 +6,11 @@ import { getProvinceById, Province, City } from '../../data/provincesData';
 interface ProvinceEChartsMapProps {
   provinceId: string;
   onBack?: () => void;
+  onCityClick?: (cityId: string) => void;
+  hideBackButton?: boolean;
 }
 
-export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapProps) {
+export function ProvinceEChartsMap({ provinceId, onBack, onCityClick, hideBackButton }: ProvinceEChartsMapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +24,8 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
     addFootprint,
     removeFootprint,
     provinceId,
-    province
+    province,
+    onCityClick,
   });
   
   // 更新ref
@@ -32,9 +35,10 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
       addFootprint,
       removeFootprint,
       provinceId,
-      province
+      province,
+      onCityClick,
     };
-  }, [footprints, addFootprint, removeFootprint, provinceId, province]);
+  }, [footprints, addFootprint, removeFootprint, provinceId, province, onCityClick]);
 
   const handleBack = () => {
     if (onBack) {
@@ -234,7 +238,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
 
         chart.on('click', (params: any) => {
           if (params.name) {
-            const { footprints, addFootprint, removeFootprint, provinceId, province } = stateRef.current;
+            const { footprints, addFootprint, removeFootprint, provinceId, province, onCityClick } = stateRef.current;
             if (!province) return;
             
             const clickedName = params.name;
@@ -264,6 +268,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
                   cityName: city.name,
                 });
               }
+              onCityClick?.(city.id);
             }
           }
         });
@@ -299,6 +304,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
 
   return (
     <div className="relative w-full h-full bg-white">
+      {!hideBackButton && (
       <button
         onClick={handleBack}
         className="absolute top-4 left-4 z-30 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-300 shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -306,6 +312,7 @@ export function ProvinceEChartsMap({ provinceId, onBack }: ProvinceEChartsMapPro
         <span>←</span>
         <span>返回全国</span>
       </button>
+      )}
       
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/95 z-20 gap-6">

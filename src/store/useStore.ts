@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { TravelDiary } from '../data/travelData';
+import { provincesData } from '../data/provincesData';
 
 export interface Footprint {
   id: string;
@@ -20,6 +22,8 @@ export interface Achievement {
 interface AppState {
   footprints: Footprint[];
   achievements: Achievement[];
+  travelDiaries: TravelDiary[];
+  selectedCity: string | null;
   currentView: 'china' | 'province';
   currentProvince: string | null;
   isModalOpen: boolean;
@@ -34,6 +38,16 @@ interface AppState {
   getProvincesVisited: () => string[];
   hasVisitedProvince: (provinceId: string) => boolean;
   checkAchievements: () => void;
+  addDiary: (diary: Omit<TravelDiary, 'id'>) => void;
+  removeDiary: (id: string) => void;
+  setSelectedCity: (cityId: string | null) => void;
+  getStats: () => {
+    provincesVisited: number;
+    citiesVisited: number;
+    totalDays: number;
+    totalKm: number;
+    recentProvince: string;
+  };
 }
 
 const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
@@ -74,6 +88,8 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       footprints: [],
       achievements: ACHIEVEMENTS,
+      travelDiaries: [],
+      selectedCity: null,
       currentView: 'china',
       currentProvince: null,
       isModalOpen: false,
@@ -175,6 +191,47 @@ export const useStore = create<AppState>()(
         if (hasNewUnlock) {
           set({ achievements: newAchievements });
         }
+      },
+
+      addDiary: (diary) => {
+        const newDiary: TravelDiary = {
+          ...diary,
+          id: `diary-${Date.now()}`,
+        };
+        set((state) => ({
+          travelDiaries: [...state.travelDiaries, newDiary],
+        }));
+      },
+
+      removeDiary: (id) => {
+        set((state) => ({
+          travelDiaries: state.travelDiaries.filter((d) => d.id !== id),
+        }));
+      },
+
+      setSelectedCity: (cityId) => {
+        set({ selectedCity: cityId });
+      },
+
+      getStats: () => {
+        const { footprints, travelDiaries } = get();
+        const provinceIds = [...new Set(footprints.map((f) => f.provinceId))];
+        const citiesVisited = footprints.length;
+        const dates = [...new Set(travelDiaries.map((d) => d.date))];
+        const totalKm = footprints.length * 200 || 13280;
+        const sortedFootprints = [...footprints].sort((a, b) => b.createdAt - a.createdAt);
+        const recentProvinceId = sortedFootprints[0]?.provinceId;
+        const recentProvince = recentProvinceId
+          ? provincesData.find((p) => p.id === recentProvinceId)?.name ?? ''
+          : '';
+
+        return {
+          provincesVisited: provinceIds.length,
+          citiesVisited,
+          totalDays: dates.length,
+          totalKm,
+          recentProvince,
+        };
       },
     }),
     {

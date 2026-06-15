@@ -1,17 +1,20 @@
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 
 export function BackButton() {
-  const { setCurrentProvince, currentView, setCurrentView } = useStore();
-  
+  const { currentView, setCurrentView, setCurrentProvince } = useStore();
+  const navigate = useNavigate();
+
   if (currentView !== 'province') {
     return null;
   }
-  
+
   const handleBack = () => {
     setCurrentView('china');
     setCurrentProvince(null);
+    navigate('/map');
   };
-  
+
   return (
     <button
       onClick={handleBack}

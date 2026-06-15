@@ -16,13 +16,12 @@
 body {
   margin: 0;
   min-height: 100vh;
-  overflow: hidden;
   background-color: #FFFFFF;
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #FFFFFF;
 }
 
@@ -30,73 +29,68 @@ body {
   font-family: 'Noto Serif SC', serif;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* 玻璃拟态工具类 */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(34, 211, 238, 0.6);
-  }
+.glass-light {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+/* 文本渐变 */
+.text-gradient {
+  background: linear-gradient(135deg, #06b6d4, #0891b2, #0d9488);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.text-gradient-warm {
+  background: linear-gradient(135deg, #f59e0b, #d97706, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 进度条闪光动画 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
-
-@keyframes scale-pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
+  100% {
+    transform: translateX(200%);
   }
 }
 
-.animate-scale-pulse {
-  animation: scale-pulse 2s ease-in-out infinite;
+.animate-shimmer {
+  animation: shimmer 2.5s ease-in-out infinite;
 }
 
+/* 滚动条样式 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

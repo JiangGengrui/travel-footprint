@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 
-interface ChinaEChartsMapProps {
-  onProvinceClick: (provinceId: string) => void;
-}
-
-export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
+export function ChinaEChartsMap() {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<echarts.ECharts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { footprints, hasVisitedProvince } = useStore();
+  const { footprints, hasVisitedProvince, setCurrentView, setCurrentProvince } = useStore();
+  const navigate = useNavigate();
 
   const updateMapData = () => {
     if (!chartInstanceRef.current) return;
@@ -59,17 +57,24 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
     }));
 
     const option = {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#f8fafc',
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
           if (params.name) {
             const provinceId = getProvinceId(params.name);
             const visited = provinceId ? hasVisitedProvince(provinceId) : false;
-            return `<div style="font-weight: bold;">${params.name}</div>
-                    <div style="color: ${visited ? '#0D9488' : '#64748B'};">
-                      ${visited ? '✓ 已访问' : '未访问'}
-                    </div>`;
+            return `
+              <div style="padding: 8px 12px; font-family: 'Noto Sans SC', sans-serif;">
+                <div style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">
+                  ${params.name}
+                </div>
+                <div style="font-size: 13px; color: ${visited ? '#0d9488' : '#94a3b8'}; display: flex; align-items: center; gap: 4px;">
+                  <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${visited ? '#0d9488' : '#cbd5e1'};"></span>
+                  ${visited ? '已访问' : '未访问'}
+                </div>
+              </div>
+            `;
           }
           return '';
         }
@@ -85,8 +90,8 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
         },
         label: {
           show: true,
-          color: '#475569',
-          fontSize: 10,
+          color: '#94a3b8',
+          fontSize: 9,
         },
         emphasis: {
           label: {
@@ -96,13 +101,13 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
             fontWeight: 'bold'
           },
           itemStyle: {
-            areaColor: '#0891B2',
-            borderColor: '#0D9488',
-            borderWidth: 2
+            areaColor: '#14b8a6',
+            borderColor: '#06b6d4',
+            borderWidth: 3
           }
         },
         itemStyle: {
-          areaColor: '#E2E8F0',
+          areaColor: '#e2e8f0',
           borderColor: '#94A3B8',
           borderWidth: 1
         },
@@ -114,7 +119,10 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           geoIndex: 0,
           data: visitedData.filter(d => d.visited).map(d => ({
             name: d.name,
-            value: 1
+            value: 1,
+            itemStyle: {
+              areaColor: '#06b6d4'
+            }
           }))
         },
         {
@@ -180,7 +188,13 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           if (params.name) {
             const provinceId = getProvinceId(params.name);
             if (provinceId) {
-              onProvinceClick(provinceId);
+              chart.dispatchAction({ type: 'highlight', name: params.name });
+              setTimeout(() => {
+                chart.dispatchAction({ type: 'downplay', name: params.name });
+              }, 300);
+              setCurrentView('province');
+              setCurrentProvince(provinceId);
+              navigate('/province/' + provinceId);
             }
           }
         });
@@ -213,14 +227,14 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
   }, [footprints, isLoading]);
 
   return (
-    <div className="relative w-full h-full bg-white">
+    <div className="relative w-full h-full bg-slate-50">
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/90 z-20">
           <div className="text-slate-700 text-lg">加载地图中...</div>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/90 z-20">
           <div className="text-red-500 text-lg">{error}</div>
         </div>
       )}
@@ -232,7 +246,13 @@ export function ChinaEChartsMap({ onProvinceClick }: ChinaEChartsMapProps) {
           onClick={() => {
             chartInstanceRef.current?.dispatchAction({ type: 'geoRoam', zoom: 1.2 });
           }}
-          className="w-12 h-12 bg-white hover:bg-slate-100 text-slate-700 rounded-xl shadow-lg flex items-center justify-center text-lg border border-slate-300"
+          className="w-11 h-11 flex items-center justify-center text-base rounded-xl
+            bg-white/70 backdrop-blur-md border border-white/50
+            text-slate-600 hover:text-slate-800
+            shadow-[0_4px_16px_rgba(0,0,0,0.06)]
+            hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)]
+            hover:bg-white/90
+            transition-all duration-200"
           title="重置视图"
         >
           ⟲

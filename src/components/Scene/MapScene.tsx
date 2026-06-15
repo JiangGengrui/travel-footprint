@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
 import { ProvinceEChartsMap } from '../Map/ProvinceEChartsMap';
@@ -14,6 +15,8 @@ export function MapScene() {
     setCurrentView 
   } = useStore();
   
+  const navigate = useNavigate();
+
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
   const provincesVisited = getProvincesVisited();
 
@@ -25,35 +28,11 @@ export function MapScene() {
     ? footprints.filter(f => f.provinceId === hoveredProvince).length 
     : 0;
 
-  const handleProvinceClick = (provinceId: string) => {
-    setCurrentView('province');
-    setCurrentProvince(provinceId);
-    window.history.pushState({ page: 'province', provinceId }, '', '#province');
-  };
-
   const handleBackToChina = () => {
     setCurrentView('china');
     setCurrentProvince(null);
-    window.history.pushState({ page: 'china' }, '', '');
+    navigate('/map');
   };
-
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state && event.state.page === 'china') {
-        setCurrentView('china');
-        setCurrentProvince(null);
-      } else if (event.state && event.state.page === 'province') {
-        setCurrentView('province');
-        setCurrentProvince(event.state.provinceId);
-      } else {
-        setCurrentView('china');
-        setCurrentProvince(null);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [setCurrentView, setCurrentProvince]);
 
   return (
     <div className="w-full h-full relative">
@@ -63,9 +42,7 @@ export function MapScene() {
           onBack={handleBackToChina}
         />
       ) : (
-        <ChinaEChartsMap
-          onProvinceClick={handleProvinceClick}
-        />
+        <ChinaEChartsMap />
       )}
       
       {currentView === 'china' && hoveredProvinceData && (
