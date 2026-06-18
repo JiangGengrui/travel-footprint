@@ -1,21 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { ChinaEChartsMap } from '../Map/ChinaEChartsMap';
-import { ProvinceEChartsMap } from '../Map/ProvinceEChartsMap';
 import { provincesData } from '../../data/provincesData';
 
 export function MapScene() {
-  const { 
-    currentView, 
-    setCurrentProvince, 
-    currentProvince, 
-    footprints, 
-    getProvincesVisited,
-    setCurrentView 
-  } = useStore();
-  
-  const navigate = useNavigate();
+  const { footprints, getProvincesVisited } = useStore();
 
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
   const provincesVisited = getProvincesVisited();
@@ -28,24 +17,11 @@ export function MapScene() {
     ? footprints.filter(f => f.provinceId === hoveredProvince).length 
     : 0;
 
-  const handleBackToChina = () => {
-    setCurrentView('china');
-    setCurrentProvince(null);
-    navigate('/map');
-  };
-
   return (
     <div className="w-full h-full relative">
-      {currentView === 'province' && currentProvince ? (
-        <ProvinceEChartsMap
-          provinceId={currentProvince}
-          onBack={handleBackToChina}
-        />
-      ) : (
-        <ChinaEChartsMap />
-      )}
+      <ChinaEChartsMap />
       
-      {currentView === 'china' && hoveredProvinceData && (
+      {hoveredProvinceData && (
         <div className="absolute top-20 left-4 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-300 shadow-xl animate-fade-in z-20">
           <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
             📍 {hoveredProvinceData.name}

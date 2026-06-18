@@ -127,7 +127,7 @@ export default function Landing() {
         <motion.div
           className="absolute inset-0 pointer-events-none z-[1]"
           animate={{ x: mousePos.x, y: mousePos.y }}
-          transition={{ type: 'tween', duration: 0.6, ease: 'easeOut' }}
+          transition={{ type: 'tween', duration: 0.6, ease: 'easeOut' as const }}
         >
           {/* Decorative gradient orbs */}
           <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-teal-500/10 blur-[100px]" />
